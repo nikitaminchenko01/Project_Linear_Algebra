@@ -5,6 +5,6 @@ def norm_vector (coordinates):
             float(coordinate)
             norm += coordinate**2
     except:
-        raise ValueError('Uncorrect dimensions')
+        raise ValueError('Incorrect coordinates')
     else:
         return norm**0.5
