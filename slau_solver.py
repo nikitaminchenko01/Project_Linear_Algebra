@@ -1,7 +1,7 @@
+import copy
 def gauss(A, B):
     if len(A) == len(A[0]) == len(B):
         l = len(A)
-        #print(l) #del
         for i in range(l-1):
             n = i + 1
             while A[i][i] == 0:
@@ -13,19 +13,19 @@ def gauss(A, B):
             norm = A[i][i]
             for k in range(l):
                 A[i][k] /= norm
-                #print(i, A[i][k])
             B[i] /= norm
-           # print(i, B[i])
             for j in range(i+1, l):
                 koef = A[j][i]
                 for k in range(l):
                     A[j][k] -= A[i][k] * koef
                 B[j] -= B[i] * koef
-        #print(A) #del
-        #print(B) #del
         X = []
         for i in range(l):
             X.append(0)
+        if B[l-1] == 0 and A[l-1][l-1] == 0:
+            raise ValueError('The system has infinitely many solutions')
+        elif B[l-1] != 0 and A[l-1][l-1] == 0:
+            raise ValueError('The system has no solution')
         X[l-1] = B[l-1] / A[l-1][l-1]
         for i in range(l-1, -1, -1):
             for j in range(l):
@@ -34,29 +34,64 @@ def gauss(A, B):
         return X
 
 
-
-def slau_drop_lz(A, B):
-    if len(A[0]) > 1:
-        for i in range(len(A)-1):
-            for j in range(i+1, len(A)):
-                lz = 0
-                for k in range(1, len(A[j])):
-                    if A[i][k-1] / A[j][k-1] != A[i][k] / A[j][k]:
-                        lz += 1
-
-                if B[i] / B[j] != A[i][0] / A[j][0]:
-                    lz += 1
-
-                if lz == 0:
-                    #print('минус строчка')
-                    A.pop(j)
-                    B.pop(j)
-                    break
+def slau_drop_null(A, B):
+    for i, row in enumerate(A):
+        isNull = True
+        for element in row:
+            if element != 0:
+                isNull = False
+        if B[i] != 0:
+            isNull = False
+        if isNull:
+            A.pop(i)
+            B.pop(i)
     return A, B
 
 
+def slau_drop_lz(A, B):
+    A, B = slau_drop_null(A, B)
+    if len(A[0]) > 1:
+        for i in range(len(B)-1):
+            j = i+1
+            while j < len(B):
+                isLZ = True
+                for k in range(1, len(A[j])):
+                    if A[j][k-1] != 0 and A[j][k] != 0 and A[i][k-1] / A[j][k-1] != A[i][k] / A[j][k]:
+                        isLZ = False
 
-S= [[2, 1, 1], [4, 2, 2], [1, 1, 1,], [6, 3, 3]]
-s = [2, 4, 6]
-#print(gauss(S, s))
-print(slau_drop_lz(S, s))
+                if A[i][0] != 0 and B[i] != 0 and B[j] / B[i] != A[j][0] / A[i][0]:
+                    isLZ = False
+
+                if isLZ:
+                    A.pop(j)
+                    B.pop(j)
+                else:
+                    j += 1
+    return A, B
+
+
+def slau(A, B):
+    M = copy.deepcopy(A)
+    V = copy.deepcopy(B)
+    M, V = slau_drop_lz(M, V)
+    if len(M) == len(M[0]) == len(V):
+        solution = gauss(M, V)
+        return solution
+    elif len(M) == len(V) and len(M) < len(M[0]):
+        rank = len(M)
+        extrank = len(V)
+        for i, row in enumerate(M):
+            isNull = True
+            for element in row:
+                if element != 0:
+                    isNull = False
+            if isNull:
+                rank -= 1
+        if rank != extrank:
+            raise ValueError('The system is underdetermined and has no solution')
+        else:
+            raise ValueError('The system is underdetermined and has infinitely many solutions')
+    elif len(M) == len(V) and len(M) > len(M[0]):
+        raise ValueError('The system is overdetermined and has no solution')
+    else:
+        raise ValueError('Incorrect dimensions')
