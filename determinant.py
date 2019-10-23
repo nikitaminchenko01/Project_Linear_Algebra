@@ -40,3 +40,65 @@ def determinant(matrix):
     except:
         raise ValueError('Incorrect elements of matrix')
 
+        
+
+def matalgcompl(matrix):
+        """    Функция считает транспонированную матрицу алгебраических дополнений.
+
+    Функция принимает в качестве аргумента квадратную матрицу. Для каждого элемента 
+    матрицы функция считает его алгебраическое дополнения путем вызова функции minorize,
+    тем самым вычеркивая строку и стобец, в котором стоит элемент, а затем от этой функции 
+    вызывается функция determinant, которая считает определитель полученного выражения. Таким
+    образом, получается матрица алгебраических дополнений."""
+    try:
+        ma = []
+        for i in range(len(matrix)):
+            ma.append([])
+            for j in range(len(matrix)):
+                ma[i].append(0)
+
+        if len(matrix) == 1:
+            return matrix[0][0]
+
+        for i in range(len(matrix[0])):
+            for j in range(len(matrix[0])):
+               ma[i][j] = determinant(minorize(matrix,i,j))
+
+
+
+        return ma
+    except:
+        raise ValueError('Incorrect')
+
+
+
+def transposealgcompl(matrix):
+        """    Функция считает обратную матрицу.
+
+    Функция принимает в качестве аргументов матрицу алгебраических дополнений. Затем 
+    транспонирует ее, одновременно считая каждый элемент, умноженный на обратный определитель.
+    """
+    try:
+        if determinant(matrix)!=0:
+            trans = []
+            for j in range(len(matalgcompl(matrix)[0])):
+                t = []
+                for i in range(len(matalgcompl(matrix))):
+                    if (i+j)%2!=0:
+                        t = t + [-matalgcompl(matrix)[i][j]/determinant(matrix)]
+                    else:
+                        t = t + [matalgcompl(matrix)[i][j]/determinant(matrix)]
+
+                trans = trans  + [t]
+            return trans
+        else:
+            print('Matrix is degenerate')
+    except:
+        raise ValueError('Incorrect')
+
+
+
+
+
+
+
